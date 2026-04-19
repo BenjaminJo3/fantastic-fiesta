@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TradeClarity MVP</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      max-width: 600px;
+      margin: auto;
+      padding: 40px;
+    }
+    input, select, button {
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+    }
+    .card {
+      margin-top: 20px;
+      padding: 15px;
+      background: #1e293b;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>TradeClarity MVP</h1>
+
+<select id="trend">
+  <option value="aligned">Aligned Trend</option>
+  <option value="against">Against Trend</option>
+</select>
+
+<select id="area">
+  <option value="key">Key Level</option>
+  <option value="none">No Key Level</option>
+</select>
+
+<select id="confirm">
+  <option value="yes">Confirmation Yes</option>
+  <option value="no">No Confirmation</option>
+</select>
+
+<input id="entry" placeholder="Entry price">
+<input id="sl" placeholder="Stop Loss">
+<input id="tp" placeholder="Take Profit">
+
+<button onclick="analyze()">Analyze Trade</button>
+
+<div id="result" class="card"></div>
+
+<script>
+function analyze() {
+  let score = 0;
+  let notes = [];
+
+  const trend = document.getElementById("trend").value;
+  const area = document.getElementById("area").value;
+  const confirm = document.getElementById("confirm").value;
+  const entry = parseFloat(document.getElementById("entry").value);
+  const sl = parseFloat(document.getElementById("sl").value);
+  const tp = parseFloat(document.getElementById("tp").value);
+
+  if (trend === "aligned") score += 30;
+  else { score -= 30; notes.push("Against trend"); }
+
+  if (area === "key") score += 25;
+  else { score -= 20; notes.push("No key level"); }
+
+  if (confirm === "yes") score += 20;
+  else { score -= 15; notes.push("No confirmation"); }
+
+  const risk = Math.abs(entry - sl);
+  const reward = Math.abs(tp - entry);
+  const rr = reward / risk;
+
+  if (rr >= 2) score += 25;
+  else { score -= 25; notes.push("Weak RR"); }
+
+  document.getElementById("result").innerHTML = `
+    <h2>Score: ${score}</h2>
+    <p>RR: ${rr.toFixed(2)}</p>
+    <ul>${notes.map(n => `<li>${n}</li>`).join("")}</ul>
+  `;
+}
+</script>
+
+</body>
+</html>
