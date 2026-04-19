@@ -2,54 +2,88 @@
 <html>
 <head>
   <title>TradeClarity MVP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       background: #0f172a;
-      color: white;
-      max-width: 600px;
-      margin: auto;
+      color: #e2e8f0;
+      margin: 0;
       padding: 40px;
+      display: flex;
+      justify-content: center;
     }
-    input, select, button {
+
+    .container {
       width: 100%;
-      margin: 8px 0;
-      padding: 10px;
+      max-width: 600px;
     }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    select, input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+    }
+
+    button {
+      background: #3b82f6;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
     .card {
       margin-top: 20px;
-      padding: 15px;
       background: #1e293b;
+      padding: 16px;
       border-radius: 10px;
     }
+
+    .good { color: #22c55e; }
+    .bad { color: #ef4444; }
   </style>
 </head>
 <body>
 
-<h1>TradeClarity MVP</h1>
+<div class="container">
 
-<select id="trend">
-  <option value="aligned">Aligned Trend</option>
-  <option value="against">Against Trend</option>
-</select>
+  <h1>TradeClarity MVP</h1>
 
-<select id="area">
-  <option value="key">Key Level</option>
-  <option value="none">No Key Level</option>
-</select>
+  <select id="trend">
+    <option value="aligned">Aligned Trend</option>
+    <option value="against">Against Trend</option>
+  </select>
 
-<select id="confirm">
-  <option value="yes">Confirmation Yes</option>
-  <option value="no">No Confirmation</option>
-</select>
+  <select id="area">
+    <option value="key">Key Level</option>
+    <option value="none">No Key Level</option>
+  </select>
 
-<input id="entry" placeholder="Entry price">
-<input id="sl" placeholder="Stop Loss">
-<input id="tp" placeholder="Take Profit">
+  <select id="confirm">
+    <option value="yes">Confirmation Yes</option>
+    <option value="no">No Confirmation</option>
+  </select>
 
-<button onclick="analyze()">Analyze Trade</button>
+  <input id="entry" placeholder="Entry Price" />
+  <input id="sl" placeholder="Stop Loss" />
+  <input id="tp" placeholder="Take Profit" />
 
-<div id="result" class="card"></div>
+  <button onclick="analyze()">Analyze Trade</button>
+
+  <div id="result" class="card"></div>
+
+</div>
 
 <script>
 function analyze() {
@@ -59,30 +93,46 @@ function analyze() {
   const trend = document.getElementById("trend").value;
   const area = document.getElementById("area").value;
   const confirm = document.getElementById("confirm").value;
+
   const entry = parseFloat(document.getElementById("entry").value);
   const sl = parseFloat(document.getElementById("sl").value);
   const tp = parseFloat(document.getElementById("tp").value);
 
+  if (isNaN(entry) || isNaN(sl) || isNaN(tp)) {
+    document.getElementById("result").innerHTML =
+      "<span class='bad'>Fill all price fields correctly</span>";
+    return;
+  }
+
+  // Trend scoring
   if (trend === "aligned") score += 30;
   else { score -= 30; notes.push("Against trend"); }
 
+  // Area scoring
   if (area === "key") score += 25;
   else { score -= 20; notes.push("No key level"); }
 
+  // Confirmation
   if (confirm === "yes") score += 20;
   else { score -= 15; notes.push("No confirmation"); }
 
+  // Risk reward
   const risk = Math.abs(entry - sl);
   const reward = Math.abs(tp - entry);
-  const rr = reward / risk;
+  const rr = risk === 0 ? 0 : reward / risk;
 
   if (rr >= 2) score += 25;
-  else { score -= 25; notes.push("Weak RR"); }
+  else { score -= 25; notes.push("Weak RR (<2)"); }
+
+  const verdict = score >= 50 ? "GOOD TRADE" : "LOW QUALITY TRADE";
 
   document.getElementById("result").innerHTML = `
-    <h2>Score: ${score}</h2>
-    <p>RR: ${rr.toFixed(2)}</p>
-    <ul>${notes.map(n => `<li>${n}</li>`).join("")}</ul>
+    <h2>${verdict}</h2>
+    <p>Score: <b>${score}</b></p>
+    <p>RR: <b>${rr.toFixed(2)}</b></p>
+    <ul>
+      ${notes.map(n => `<li>${n}</li>`).join("")}
+    </ul>
   `;
 }
 </script>
